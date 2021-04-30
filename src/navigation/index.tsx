@@ -4,8 +4,9 @@ import { NavigationContainer } from '@react-navigation/native';
 import { Text, View } from 'react-native';
 import HomeScreen from '../screens/HomeScreen';
 import RecentUsersScreen from '../screens/RecentUsersScreen';
+import { RootStackParamList } from '../types';
 
-const Stack = createStackNavigator()
+const Stack = createStackNavigator();
 
 const MainNavigator: FC = () => {
     const { Navigator, Screen } = Stack;
@@ -13,8 +14,8 @@ const MainNavigator: FC = () => {
     return (
         <NavigationContainer>
             <Navigator initialRouteName="Home">
-                <Screen name="Home" component={HomeScreen}></Screen>
-                <Screen name="Recent Users" component={RecentUsersScreen}></Screen>
+                <Screen name="Home" component={HomeScreen} />
+                <Screen name="Recent Users" component={RecentUsersScreen} />
             </Navigator>
         </NavigationContainer>
     );
