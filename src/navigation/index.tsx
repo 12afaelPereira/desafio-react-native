@@ -12,8 +12,8 @@ const MainNavigator: FC = () => {
     return (
         <NavigationContainer>
             <Navigator initialRouteName="Home">
-                <Screen name="Home" component={HomeScreen} />
-                <Screen name="Recent Users" component={RecentUsersScreen} />
+                <Screen name="HomeScreen" component={HomeScreen} />
+                <Screen name="RecentUsersScreen" component={RecentUsersScreen} />
             </Navigator>
         </NavigationContainer>
     );

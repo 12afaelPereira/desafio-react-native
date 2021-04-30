@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Text, View } from 'react-native';
+import { Button, Image, Text, View, StyleSheet } from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
 import { HomeProps } from '../types';
 import githubAPI from '../axios'
@@ -29,22 +29,24 @@ interface Repositories{
 
 
 function HomeScreen({ navigation }: HomeProps) {
-    const recentUsers: any = 'Recent Users';
+    const recentUsers = 'RecentUsersScreen';
+
     const [text, setText] = useState<string>("");
     const [user, setUser] = useState<User>();
     const [repositories, setRepositories] = useState<[Repositories]>();
 
-    useEffect(() => {
+    // useEffect(() => {
 
-    }, [user]);
+    // }, [user]);
 
-    async function loadData() {
-        githubAPI.get('/users/12afaelPereira')
+    async function loadData(text:string) {
+        githubAPI.get(`/users/${text}`)
             .then( (response) =>{
-                // console.log(response.data);
                 setUser(response.data);
+            })
+            .catch(error =>{
+                return true;
             });
-
 
     //     const response = await fetch('/users/12afaelPereira');
     //     const data = await response.json();
@@ -61,12 +63,31 @@ function HomeScreen({ navigation }: HomeProps) {
                 placeholder={"Buscar usuário"}
                 value={text} />
 
-            <Text>{user?.login}{user?.location}</Text>
+            <View>
+                <Image source={{
+                    // uri: 'https://www.cleverfiles.com/howto/wp-content/uploads/2018/03/minion.jpg'
+                    uri: user?.avatar_url
+                }}
+                style={styles.container}
+                />
+                <Text>Nome: {user?.name}</Text>
+                <Text>Login: {user?.login}</Text>
+                <Text>Localização: {user?.location}</Text>
+            </View>
 
             <Button title="Buscas recentes" onPress={() => { navigation.navigate(recentUsers) }} />
-            <Button title="Busca user" onPress={() => { loadData() }} />
+            <Button title="Busca user" onPress={() => { loadData(text) }} />
         </View>
     );
 }
 
+const styles = StyleSheet.create({
+    container: {
+      width: 100,
+      height: 100,
+      borderRadius: 100,
+    },
+});
+
 export default HomeScreen;
+
