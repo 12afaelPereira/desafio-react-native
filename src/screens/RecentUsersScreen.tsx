@@ -4,7 +4,7 @@ import { Text, View } from 'react-native';
 const RecentUsersScreen :FC = () => {
     return(
         <View>
-            <Text>Hello from recent users!</Text>
+            <Text>Buscas Recentes</Text>
         </View>
     );
 }
