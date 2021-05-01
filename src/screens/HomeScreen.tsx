@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Image, Text, View, StyleSheet } from 'react-native';
-import { TextInput, TouchableHighlight } from 'react-native-gesture-handler';
+import { Button, Image, Text, View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { TextInput } from 'react-native-gesture-handler';
 import { HomeProps } from '../types';
 import githubAPI from '../axios'
 
@@ -30,7 +30,6 @@ interface Repositories {
 function HomeScreen({ navigation }: HomeProps) {
     const recentUsers = 'RecentUsersScreen';
 
-    let reposURL:string = "";
     const [text, setText] = useState<string>("");
     const [user, setUser] = useState<User>();
     const [search, setSearch] = useState<boolean>(false);
@@ -45,27 +44,22 @@ function HomeScreen({ navigation }: HomeProps) {
 
         githubAPI.get(`/users/${text}`)
             .then((response) => {
+                setText("");
+                setRepositories(undefined);
                 setSearch(true);
-                reposURL = response.data.repos_url;
                 setUser(response.data);
             })
             .catch(error => {
                 return true;
             });
-
-        //     const response = await fetch('/users/12afaelPereira');
-        //     const data = await response.json();
-
-        //     setUser(data);
     }
 
-    async function loadProfile(reposURL: string) {
+    async function loadProfile(login: string | undefined) {
 
-        githubAPI.get(reposURL)
+        githubAPI.get(`/users/${login}/repos`)
             .then((response) => {
                 setProfile(true);
-                console.log(response.data);
-                setUser(response.data);
+                setRepositories(response.data);
             })
             .catch(error => {
                 return true;
@@ -76,7 +70,7 @@ function HomeScreen({ navigation }: HomeProps) {
 
     return (
         <View>
-            <Text>Bem vindo ao HUBusca</Text>
+            <Text style={styles.text}>Bem vindo ao HUBusca</Text>
 
             <TextInput
                 onChangeText={setText}
@@ -84,23 +78,36 @@ function HomeScreen({ navigation }: HomeProps) {
                 value={text} />
 
 
+            <Button title="Buscas recentes" onPress={() => { navigation.navigate(recentUsers) }} />
+            <Button title="Busca user" onPress={() => { loadData(text) }} />
+
+
             {search && (<View>
-                <TouchableHighlight
+                <TouchableOpacity
                     style={styles.touch}
-                    onPress={() => { loadProfile(reposURL) }}
+                    onPress={() => { loadProfile(user?.login) }}
                 >
                     <Image source={{ uri: user?.avatar_url }}
                         style={styles.image}
                     />
-                </TouchableHighlight>
+                </TouchableOpacity>
                 <Text style={styles.text}>{user?.name}</Text>
                 <Text style={styles.text}>Login: {user?.login}</Text>
                 <Text style={styles.text}>{user?.location}</Text>
             </View>)}
 
+            {profile && (
+                <ScrollView>
+                    {repositories?.map((repository, index) => {
+                        return (
+                            <Text key={index}>
+                                {repository.name}
+                            </Text>)
+                    })}
+                </ScrollView>
+            )}
 
-            <Button title="Buscas recentes" onPress={() => { navigation.navigate(recentUsers) }} />
-            <Button title="Busca user" onPress={() => { loadData(text) }} />
+
         </View>
     );
 }
@@ -111,11 +118,11 @@ const styles = StyleSheet.create({
         height: 100,
         borderRadius: 100,
     },
-    touch:{
+    touch: {
         display: 'flex',
         alignItems: 'center',
     },
-    text:{
+    text: {
         textAlign: 'center',
     },
 });
