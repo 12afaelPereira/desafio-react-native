@@ -1,31 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Image, Text, View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { TextInput } from 'react-native-gesture-handler';
+import { FlatList, TextInput, TouchableHighlight } from 'react-native-gesture-handler';
 import { HomeProps } from '../types';
+import { Repositories, User } from '../interfaces';
 import githubAPI from '../axios'
-
-
-
-interface User {
-    name: string;
-    avatar_url: string;
-    login: string;
-    location: string;
-    id: string;
-    followers: string;
-    public_repos: number;
-    repos_url: string;
-}
-
-interface Repositories {
-    name: string;
-    language: string;
-    description: string;
-    created_at: string;
-    pushed_at: string;
-}
-
-
 
 function HomeScreen({ navigation }: HomeProps) {
     const recentUsers = 'RecentUsersScreen';
@@ -36,11 +14,9 @@ function HomeScreen({ navigation }: HomeProps) {
     const [profile, setProfile] = useState<boolean>(false);
     const [repositories, setRepositories] = useState<[Repositories]>();
 
-    // useEffect(() => {
+    // useEffect(() => {}, [user]);
 
-    // }, [user]);
-
-    async function loadData(text: string) {
+    function loadUserData(text: string) {
 
         githubAPI.get(`/users/${text}`)
             .then((response) => {
@@ -54,7 +30,7 @@ function HomeScreen({ navigation }: HomeProps) {
             });
     }
 
-    async function loadProfile(login: string | undefined) {
+    function loadUserRepositoriesData(login: string | undefined) {
 
         githubAPI.get(`/users/${login}/repos`)
             .then((response) => {
@@ -65,8 +41,6 @@ function HomeScreen({ navigation }: HomeProps) {
                 return true;
             });
     }
-
-
 
     return (
         <View>
@@ -79,13 +53,12 @@ function HomeScreen({ navigation }: HomeProps) {
 
 
             <Button title="Buscas recentes" onPress={() => { navigation.navigate(recentUsers) }} />
-            <Button title="Busca user" onPress={() => { loadData(text) }} />
-
+            <Button title="Busca user" onPress={() => { loadUserData(text) }} />
 
             {search && (<View>
                 <TouchableOpacity
                     style={styles.touch}
-                    onPress={() => { loadProfile(user?.login) }}
+                    onPress={() => { loadUserRepositoriesData(user?.login) }}
                 >
                     <Image source={{ uri: user?.avatar_url }}
                         style={styles.image}
@@ -97,17 +70,43 @@ function HomeScreen({ navigation }: HomeProps) {
             </View>)}
 
             {profile && (
+                // <FlatList
+                //     data={repositories}
+                //     keyExtractor={(_, index)=> index.toString()}
+                //     renderItem={(item) => {
+                //         return(
+                //             <Text>Repo name: {item}</Text>
+                //         )
+                //     }}
+
+                // />
                 <ScrollView>
+                    <View>
+                        <Text>ID: {user?.id}</Text>
+                        <Text>Followers: {user?.followers}</Text>
+                        <Text>Repositorios públicos: {user?.public_repos}</Text>
+                        <Text>Lista de Repositórios:</Text>
+                    </View>
                     {repositories?.map((repository, index) => {
                         return (
-                            <Text key={index}>
-                                {repository.name}
-                            </Text>)
+                            <ScrollView key={index}>
+                                <Text>
+                                    Nome: {repository.name}
+                                </Text>
+                                <Text>
+                                    Linguagem: {repository.language || "Sem linguagem especificada"}
+                                </Text>
+                                <Text>
+                                    Descrição: {repository.description || "Sem descrição"}
+                                </Text>
+                                <Text>
+                                    Data de criação: {repository.created_at}. Último push: {repository.pushed_at}
+                                </Text>
+                            </ScrollView>
+                        )
                     })}
                 </ScrollView>
             )}
-
-
         </View>
     );
 }
