@@ -6,7 +6,7 @@ export interface User {
     id: string;
     followers: string;
     public_repos: number;
-    repos_url: string;
+    // repos_url: string;
 }
 
 export interface Repositories {

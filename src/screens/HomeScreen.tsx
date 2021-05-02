@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Image, Text, View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { FlatList, TextInput, TouchableHighlight } from 'react-native-gesture-handler';
+import { Button, Image, Text, View, StyleSheet, TouchableOpacity, ScrollView, FlatList, ActivityIndicator } from 'react-native';
+import { TextInput } from 'react-native-gesture-handler';
 import { HomeProps } from '../types';
 import { Repositories, User } from '../interfaces';
 import githubAPI from '../axios'
+import { keyframes } from 'styled-components';
 
 function HomeScreen({ navigation }: HomeProps) {
     const recentUsers = 'RecentUsersScreen';
@@ -12,17 +13,28 @@ function HomeScreen({ navigation }: HomeProps) {
     const [user, setUser] = useState<User>();
     const [search, setSearch] = useState<boolean>(false);
     const [profile, setProfile] = useState<boolean>(false);
-    const [repositories, setRepositories] = useState<[Repositories]>();
+    const [repositories, setRepositories] = useState<Repositories[]>([]);
 
-    // useEffect(() => {}, [user]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [offset, setOffset] = useState<number>(1);
+    const perPage:number = 10;
 
-    function loadUserData(text: string) {
+
+    // useEffect(() => {
+    //     if(profile){
+    //         loadUserRepositoriesData();
+    //     }
+    // }, []);
+
+    function loadUserData() {
 
         githubAPI.get(`/users/${text}`)
             .then((response) => {
                 setText("");
-                setRepositories(undefined);
+                setRepositories([]);
+                setProfile(false);
                 setSearch(true);
+                setOffset(1);
                 setUser(response.data);
             })
             .catch(error => {
@@ -30,12 +42,14 @@ function HomeScreen({ navigation }: HomeProps) {
             });
     }
 
-    function loadUserRepositoriesData(login: string | undefined) {
-
-        githubAPI.get(`/users/${login}/repos`)
+    function loadUserRepositoriesData() {
+        githubAPI.get(`/users/${user?.login}/repos?page=${offset}&per_page=${perPage}`)
             .then((response) => {
                 setProfile(true);
-                setRepositories(response.data);
+                setOffset(offset + 1);
+            
+                let data =  [...repositories, ...response.data];
+                setRepositories(data);
             })
             .catch(error => {
                 return true;
@@ -43,7 +57,7 @@ function HomeScreen({ navigation }: HomeProps) {
     }
 
     return (
-        <View>
+        <View style={styles.scroll}>
             <Text style={styles.text}>Bem vindo ao HUBusca</Text>
 
             <TextInput
@@ -53,12 +67,12 @@ function HomeScreen({ navigation }: HomeProps) {
 
 
             <Button title="Buscas recentes" onPress={() => { navigation.navigate(recentUsers) }} />
-            <Button title="Busca user" onPress={() => { loadUserData(text) }} />
+            <Button title="Busca user" onPress={() => { loadUserData() }} />
 
             {search && (<View>
                 <TouchableOpacity
                     style={styles.touch}
-                    onPress={() => { loadUserRepositoriesData(user?.login) }}
+                    onPress={() => { loadUserRepositoriesData() }}
                 >
                     <Image source={{ uri: user?.avatar_url }}
                         style={styles.image}
@@ -70,43 +84,44 @@ function HomeScreen({ navigation }: HomeProps) {
             </View>)}
 
             {profile && (
-                // <FlatList
-                //     data={repositories}
-                //     keyExtractor={(_, index)=> index.toString()}
-                //     renderItem={(item) => {
-                //         return(
-                //             <Text>Repo name: {item}</Text>
-                //         )
-                //     }}
-
-                // />
-                <ScrollView>
+                <View style={styles.scroll}>
                     <View>
                         <Text>ID: {user?.id}</Text>
                         <Text>Followers: {user?.followers}</Text>
                         <Text>Repositorios públicos: {user?.public_repos}</Text>
                         <Text>Lista de Repositórios:</Text>
                     </View>
-                    {repositories?.map((repository, index) => {
-                        return (
-                            <ScrollView key={index}>
+
+
+                    <FlatList
+                        data={repositories}
+                        keyExtractor={(item, index) => index.toString()}
+                        onEndReached={loadUserRepositoriesData}
+                        onEndReachedThreshold={0.1}
+                        ListFooterComponent={()=>
+                            <View style={styles.activity}>
+                                <ActivityIndicator size="large" color="#0000ff" />
+                            </View>    
+                        }
+                        renderItem={({ item, index }) =>
+                            <View>
                                 <Text>
-                                    Nome: {repository.name}
+                                    Nome: {item.name}
                                 </Text>
                                 <Text>
-                                    Linguagem: {repository.language || "Sem linguagem especificada"}
+                                    Linguagem: {item.language || "Sem linguagem especificada"}
                                 </Text>
                                 <Text>
-                                    Descrição: {repository.description || "Sem descrição"}
+                                    Descrição: {item.description || "Sem descrição"}
                                 </Text>
                                 <Text>
-                                    Data de criação: {repository.created_at}. Último push: {repository.pushed_at}
+                                    Data de criação: {item.created_at}. Último push: {item.pushed_at}
                                 </Text>
-                            </ScrollView>
-                        )
-                    })}
-                </ScrollView>
-            )}
+                            </View>
+                        }
+                    />
+                </View>)
+            }
         </View>
     );
 }
@@ -123,6 +138,15 @@ const styles = StyleSheet.create({
     },
     text: {
         textAlign: 'center',
+    },
+    scroll: {
+        flex:1,
+        // flexGrow:1,
+        // paddingBottom: 100,
+    },
+    activity:{
+        marginTop: 20,
+        marginBottom: 20,
     },
 });
 
