@@ -1,12 +1,11 @@
 export interface User {
     name: string;
-    avatar_url: string;
+    avatar_url: string | undefined;
     login: string;
     location: string;
     id: string;
     followers: string;
     public_repos: number;
-    // repos_url: string;
 }
 
 export interface Repositories {
@@ -16,3 +15,15 @@ export interface Repositories {
     created_at: string;
     pushed_at: string;
 }
+
+export interface UserProps {
+    name: string;
+    avatar_url: string | undefined;
+    login: string;
+    location: string;
+}
+
+export interface RepositoryProps extends Repositories{
+
+}
+
