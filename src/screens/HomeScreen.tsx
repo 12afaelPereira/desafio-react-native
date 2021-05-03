@@ -5,35 +5,49 @@ import { HomeProps } from '../types';
 import { Repositories, User } from '../interfaces';
 import githubAPI from '../axios'
 import { keyframes } from 'styled-components';
+import Repository from '../components/Repository';
+import UserComponent from '../components/UserComponent';
+import * as WebBrowser from 'expo-web-browser';
+
+
 
 function HomeScreen({ navigation }: HomeProps) {
     const recentUsers = 'RecentUsersScreen';
 
     const [text, setText] = useState<string>("");
-    const [user, setUser] = useState<User>();
-    const [search, setSearch] = useState<boolean>(false);
-    const [profile, setProfile] = useState<boolean>(false);
+    const [user, setUser] = useState<User>({ name: "", avatar_url: undefined, login: "", location: "", id: "", followers: "", public_repos: 0 });
+    const [aboutUser, setAboutUser] = useState<boolean>(false);
+    const [userProfile, setUserProfile] = useState<boolean>(false);
     const [repositories, setRepositories] = useState<Repositories[]>([]);
 
-    const [loading, setLoading] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>(false);
     const [offset, setOffset] = useState<number>(1);
-    const perPage:number = 10;
+    const perPage: number = 10;
+
+    const [requestLoadData, setRequestLoadData] = useState<number>(0);
+    const [requestRepositoriesData, setRequestRepositoriesData] = useState<number>(0);
+
+    const [receivingData, setReceivingData] = useState<boolean>(true);
 
 
-    // useEffect(() => {
-    //     if(profile){
-    //         loadUserRepositoriesData();
-    //     }
-    // }, []);
+    const loadUser = () => {
 
-    function loadUserData() {
+        // setText("");
+        // // requestUser(text);
+        // setRepositories([]);
+        // setUserProfile(true);
+        // setAboutUser(false);
+        // setOffset(1);
 
         githubAPI.get(`/users/${text}`)
             .then((response) => {
+                setRequestLoadData(requestLoadData + 1);
+                // console.log("Request LoadUser: " + requestLoadData);
+
                 setText("");
                 setRepositories([]);
-                setProfile(false);
-                setSearch(true);
+                setAboutUser(false);
+                setUserProfile(true);
                 setOffset(1);
                 setUser(response.data);
             })
@@ -42,13 +56,19 @@ function HomeScreen({ navigation }: HomeProps) {
             });
     }
 
-    function loadUserRepositoriesData() {
-        githubAPI.get(`/users/${user?.login}/repos?page=${offset}&per_page=${perPage}`)
+    const loadUserRepositoriesData = () => {
+        setLoading(true);
+
+        githubAPI.get(`/users/${user.login}/repos?page=${offset}&per_page=${perPage}`)
             .then((response) => {
-                setProfile(true);
+                // setRequestRepositoriesData(requestRepositoriesData + 1);
+                // console.log("Request LoadRepositoriesData: " + requestRepositoriesData);
+
+                setAboutUser(true);
                 setOffset(offset + 1);
-            
-                let data =  [...repositories, ...response.data];
+                setLoading(false);
+
+                let data = [...repositories, ...response.data];
                 setRepositories(data);
             })
             .catch(error => {
@@ -67,28 +87,42 @@ function HomeScreen({ navigation }: HomeProps) {
 
 
             <Button title="Buscas recentes" onPress={() => { navigation.navigate(recentUsers) }} />
-            <Button title="Busca user" onPress={() => { loadUserData() }} />
+            <Button title="Buscar user" onPress={() => { loadUser() }} />
 
-            {search && (<View>
-                <TouchableOpacity
-                    style={styles.touch}
-                    onPress={() => { loadUserRepositoriesData() }}
-                >
-                    <Image source={{ uri: user?.avatar_url }}
-                        style={styles.image}
-                    />
-                </TouchableOpacity>
-                <Text style={styles.text}>{user?.name}</Text>
-                <Text style={styles.text}>Login: {user?.login}</Text>
-                <Text style={styles.text}>{user?.location}</Text>
-            </View>)}
 
-            {profile && (
+
+
+            {userProfile && (
+
+                // <UserComponent
+                //     avatar_url={user.avatar_url}
+                //     name={user.name}
+                //     login={user.login}
+                //     location={user.location}
+                // />
+                <View>
+                    <TouchableOpacity
+                        style={styles.touch}
+                        onPress={() => { loadUserRepositoriesData() }}
+                    >
+                        <Image source={{ uri: user.avatar_url }}
+                            style={styles.image}
+                        />
+                    </TouchableOpacity>
+                    <Text style={styles.text}>{user.name}</Text>
+                    <Text style={styles.text}>Login: {user.login}</Text>
+                    <Text style={styles.text}>{user.location}</Text>
+                </View>
+            )}
+
+
+
+            {aboutUser && (
                 <View style={styles.scroll}>
                     <View>
-                        <Text>ID: {user?.id}</Text>
-                        <Text>Followers: {user?.followers}</Text>
-                        <Text>Repositorios públicos: {user?.public_repos}</Text>
+                        <Text>ID: {user.id}</Text>
+                        <Text>Followers: {user.followers}</Text>
+                        <Text>Repositorios públicos: {user.public_repos}</Text>
                         <Text>Lista de Repositórios:</Text>
                     </View>
 
@@ -98,26 +132,27 @@ function HomeScreen({ navigation }: HomeProps) {
                         keyExtractor={(item, index) => index.toString()}
                         onEndReached={loadUserRepositoriesData}
                         onEndReachedThreshold={0.1}
-                        ListFooterComponent={()=>
-                            <View style={styles.activity}>
-                                <ActivityIndicator size="large" color="#0000ff" />
-                            </View>    
-                        }
+                        ListFooterComponent={() => {
+                            if (!loading) return null;
+
+                            return (
+                                <View style={styles.activity}>
+                                    <ActivityIndicator size="large" color="#0000ff" />
+                                </View>
+                            )
+                        }}
                         renderItem={({ item, index }) =>
-                            <View>
-                                <Text>
-                                    Nome: {item.name}
-                                </Text>
-                                <Text>
-                                    Linguagem: {item.language || "Sem linguagem especificada"}
-                                </Text>
-                                <Text>
-                                    Descrição: {item.description || "Sem descrição"}
-                                </Text>
-                                <Text>
-                                    Data de criação: {item.created_at}. Último push: {item.pushed_at}
-                                </Text>
-                            </View>
+                            <TouchableOpacity
+                                onPress={() => { WebBrowser.openBrowserAsync(`https://github.com/${user.login}/${item.name}`)}}>
+
+                                <Repository
+                                    name={item.name}
+                                    language={item.language}
+                                    description={item.description}
+                                    created_at={item.created_at}
+                                    pushed_at={item.pushed_at}
+                                />
+                            </TouchableOpacity>
                         }
                     />
                 </View>)
@@ -140,11 +175,11 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     scroll: {
-        flex:1,
+        flex: 1,
         // flexGrow:1,
         // paddingBottom: 100,
     },
-    activity:{
+    activity: {
         marginTop: 20,
         marginBottom: 20,
     },
