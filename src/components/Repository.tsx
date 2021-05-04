@@ -1,25 +1,30 @@
 import React,{ FC } from "react";
 import { Text, View } from "react-native";
-import {RepositoryProps} from "../interfaces"
+import {RepositoryProps} from "../commom/interfaces";
+import { RepositoryText, RepositoryWrap } from "../screens/index";
+
 
 
 const Repository: FC<RepositoryProps> = (props) => {
 
     return (
-        <View>
-            <Text>
+        <RepositoryWrap>
+            <RepositoryText>
                 Nome: {props.name}
-            </Text>
-            <Text>
+            </RepositoryText>
+            <RepositoryText>
                 Linguagem: {props.language || "Sem linguagem especificada"}
-            </Text>
-            <Text>
+            </RepositoryText>
+            <RepositoryText>
                 Descrição: {props.description || "Sem descrição"}
-            </Text>
-            <Text>
-                Data de criação: {props.created_at}. Último push: {props.pushed_at}
-            </Text>
-        </View>
+            </RepositoryText>
+            <RepositoryText>
+                Data de criação: {props.created_at}Último push: {props.pushed_at}
+            </RepositoryText>
+            <RepositoryText>
+                Último push: {props.pushed_at}
+            </RepositoryText>
+        </RepositoryWrap>
     );
 }
 

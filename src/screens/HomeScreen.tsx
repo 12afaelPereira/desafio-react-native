@@ -10,7 +10,7 @@ import * as WebBrowser from 'expo-web-browser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { EvilIcons } from '@expo/vector-icons';
 
-import { Logo, RecentUsersButton, RecentUsersText, SearchBar, SearchWrap } from './index';
+import { Header, Logo, RepositoryWrap, SearchBar, SearchBarButton, SearchBarText, SearchWrap, TextCenter, UserImageButton } from './index';
 
 
 function HomeScreen({ navigation }: HomeProps) {
@@ -55,14 +55,6 @@ function HomeScreen({ navigation }: HomeProps) {
 
     const loadUser = () => {
 
-        // setSearches("sdasdasawad");
-        // setText("");
-        // // requestUser(text);
-        // setRepositories([]);
-        // setUserProfile(true);
-        // setAboutUser(false);
-        // setOffset(1);
-
         githubAPI.get(`/users/${text}`)
             .then((response) => {
                 setText("");
@@ -103,7 +95,12 @@ function HomeScreen({ navigation }: HomeProps) {
 
     return (
         <View style={styles.scroll}>
-            <Logo>HUBusca</Logo>
+            <Header>
+                <Logo>HUBusca</Logo>
+                <View>
+                    <EvilIcons name="search" size={30} color="rgba(68, 130, 195, 1)" />
+                </View>
+            </Header>
 
             <SearchWrap>
                 <SearchBar
@@ -115,33 +112,29 @@ function HomeScreen({ navigation }: HomeProps) {
                 >
                 </SearchBar>
 
-                <RecentUsersButton onPress={() => { navigation.navigate(recentUsers) }}>
-                    <RecentUsersText>Buscas recentes</RecentUsersText>
-                </RecentUsersButton>
+                <SearchBarButton onPress={() => { loadUser() }}>
+                    <SearchBarText>Buscar</SearchBarText>
+                </SearchBarButton>
             </SearchWrap>
+
+            {/* <SearchBarButton onPress={() => { navigation.navigate(recentUsers) }}>
+                    <SearchBarText>Buscar</SearchBarText>
+            </SearchBarButton> */}
 
 
 
             {userProfile && (
-
-                // <UserComponent
-                //     avatar_url={user.avatar_url}
-                //     name={user.name}
-                //     login={user.login}
-                //     location={user.location}
-                // />
                 <View>
-                    <TouchableOpacity
-                        style={styles.touch}
+                    <UserImageButton
                         onPress={() => { loadUserRepositoriesData() }}
                     >
                         <Image source={{ uri: user.avatar_url }}
                             style={styles.image}
                         />
-                    </TouchableOpacity>
-                    <Text style={styles.text}>{user.name}</Text>
-                    <Text style={styles.text}>Login: {user.login}</Text>
-                    <Text style={styles.text}>{user.location}</Text>
+                    </UserImageButton>
+                    <TextCenter>{user.name}</TextCenter>
+                    <TextCenter>Login: {user.login}</TextCenter>
+                    <TextCenter>{user.location}</TextCenter>
                 </View>
             )}
 
@@ -149,10 +142,10 @@ function HomeScreen({ navigation }: HomeProps) {
             {aboutUser && (
                 <View style={styles.scroll}>
                     <View>
-                        <Text>ID: {user.id}</Text>
-                        <Text>Followers: {user.followers}</Text>
-                        <Text>Repositorios públicos: {user.public_repos}</Text>
-                        <Text>Lista de Repositórios:</Text>
+                        <TextCenter>ID: {user.id}</TextCenter>
+                        <TextCenter>Followers: {user.followers}</TextCenter>
+                        <TextCenter>Repositorios públicos: {user.public_repos}</TextCenter>
+                        <TextCenter>Lista de Repositórios:</TextCenter>
                     </View>
 
 
@@ -180,7 +173,7 @@ function HomeScreen({ navigation }: HomeProps) {
                                     description={item.description}
                                     created_at={item.created_at}
                                     pushed_at={item.pushed_at}
-                                />
+                                ></Repository>
                             </TouchableOpacity>
                         }
                     />
@@ -200,14 +193,9 @@ const styles = StyleSheet.create({
         display: 'flex',
         alignItems: 'center',
     },
-    text: {
-        textAlign: 'center',
-    },
     scroll: {
         flex: 1,
         backgroundColor: 'white',
-        // flexGrow:1,
-        // paddingBottom: 100,
     },
     activity: {
         marginTop: 20,

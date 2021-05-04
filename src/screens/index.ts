@@ -1,11 +1,18 @@
 import React from 'react';
-import { StatusBar } from 'react-native';
+import Repository from '../components/Repository';
 import styled from 'styled-components/native';
+
+export const Header = styled.View`
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 70px;
+`
 
 export const Logo = styled.Text`
     color: rgba(68, 130, 195, 1);
     text-align:center;
-    margin-top: 60px;
+    
     font-size:20px;
     font-weight:bold;
 `;
@@ -25,17 +32,18 @@ export const SearchWrap = styled.View`
 `
 
 export const SearchBar = styled.TextInput`
-    flex:2;
+    flex:1;
     background-color: #EAEAEA;
-    /* font-size: 18px; */
-    padding-left:10px;
+    padding-left:15px;
     border-top-left-radius:30px;
     border-bottom-left-radius:30px;
 
 `
 
-export const RecentUsersButton = styled.TouchableOpacity`
+export const SearchBarButton = styled.TouchableOpacity`
+    flex:1;
     display: flex;
+    align-items: center;
     justify-content: center;
     padding-right: 10px;
     padding-left: 10px;
@@ -43,6 +51,41 @@ export const RecentUsersButton = styled.TouchableOpacity`
     border-bottom-right-radius:30px;
     background-color: rgba(68, 130, 195, 1);
 `
-export const RecentUsersText = styled.Text`
+export const SearchBarText = styled.Text`
     color: white;
+`
+// export const RecentUsersButton = styled.TouchableOpacity`
+//     display: flex;
+//     justify-content: center;
+//     padding-right: 10px;
+//     padding-left: 10px;
+//     border-top-right-radius:30px;
+//     border-bottom-right-radius:30px;
+//     background-color: rgba(68, 130, 195, 1);
+// `
+// export const RecentUsersText = styled.Text`
+//     color: white;
+// `
+
+export const UserImageButton = styled.TouchableOpacity`
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+`
+
+export const TextCenter = styled.Text`
+    text-align: center;
+`
+
+export const RepositoryWrap = styled.View`
+    display: flex;
+    align-self: center;
+    width: 92%;
+    margin-top:20px;
+    padding: 20px;
+    border-radius: 10px;
+    background: #64A0DE;
+`
+export const RepositoryText = styled.Text`
+    color: #fff;
 `
