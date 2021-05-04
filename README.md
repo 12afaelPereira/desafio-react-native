@@ -1,10 +1,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">
-    <img src="https://github.com/12afaelPereira/desafio-react-native/blob/main/assets/HUBusca.png" alt="Logo" width="80" height="80">
-  
-
-  <h3 align="center">HUBusca</h3>
+    <img src="https://github.com/12afaelPereira/desafio-react-native/blob/main/assets/HUBusca.png" alt="Logo" width="200" height="80">
 
   <p align="center">
     Projeto desenvolvido para processo seletivo
