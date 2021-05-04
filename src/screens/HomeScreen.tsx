@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Image, Text, View, StyleSheet, TouchableOpacity, ScrollView, FlatList, ActivityIndicator } from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
-import { HomeProps } from '../types';
-import { Repositories, User } from '../interfaces';
-import githubAPI from '../axios'
-import { keyframes } from 'styled-components';
+import { HomeProps } from '../commom/types';
+import { Repositories, User } from '../commom/interfaces';
+import githubAPI from '../commom/axios'
 import Repository from '../components/Repository';
 import UserComponent from '../components/UserComponent';
 import * as WebBrowser from 'expo-web-browser';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { EvilIcons } from '@expo/vector-icons';
 
+import { Logo, RecentUsersButton, RecentUsersText, SearchBar, SearchWrap } from './index';
 
 
 function HomeScreen({ navigation }: HomeProps) {
@@ -20,18 +22,40 @@ function HomeScreen({ navigation }: HomeProps) {
     const [userProfile, setUserProfile] = useState<boolean>(false);
     const [repositories, setRepositories] = useState<Repositories[]>([]);
 
+    const [users, setUsers] = useState<User[]>([user]);
+
     const [loading, setLoading] = useState<boolean>(false);
     const [offset, setOffset] = useState<number>(1);
     const perPage: number = 10;
 
-    const [requestLoadData, setRequestLoadData] = useState<number>(0);
-    const [requestRepositoriesData, setRequestRepositoriesData] = useState<number>(0);
 
-    const [receivingData, setReceivingData] = useState<boolean>(true);
+    const setSearches = async (users: User[]) => {
+        try {
+            const jsonValue = JSON.stringify(users)
+            await AsyncStorage.setItem('@users', jsonValue)
+        } catch (e) {
+            // save error
+        }
+        console.log('Done.')
+    }
 
+    const getSearches = async () => {
+        try {
+            const jsonValue = await AsyncStorage.getItem('@users')
+            if (jsonValue !== null) {
+                console.log(JSON.parse(jsonValue));
+            }
+
+        } catch (e) {
+            // read error
+        }
+
+        console.log('Done.')
+    }
 
     const loadUser = () => {
 
+        // setSearches("sdasdasawad");
         // setText("");
         // // requestUser(text);
         // setRepositories([]);
@@ -41,19 +65,22 @@ function HomeScreen({ navigation }: HomeProps) {
 
         githubAPI.get(`/users/${text}`)
             .then((response) => {
-                setRequestLoadData(requestLoadData + 1);
-                // console.log("Request LoadUser: " + requestLoadData);
-
                 setText("");
                 setRepositories([]);
                 setAboutUser(false);
                 setUserProfile(true);
                 setOffset(1);
                 setUser(response.data);
+                setUsers([...users, ...response.data]);
+                setSearches(users);
+                // getSearches();
             })
             .catch(error => {
                 return true;
             });
+
+
+        getSearches();
     }
 
     const loadUserRepositoriesData = () => {
@@ -61,8 +88,6 @@ function HomeScreen({ navigation }: HomeProps) {
 
         githubAPI.get(`/users/${user.login}/repos?page=${offset}&per_page=${perPage}`)
             .then((response) => {
-                // setRequestRepositoriesData(requestRepositoriesData + 1);
-                // console.log("Request LoadRepositoriesData: " + requestRepositoriesData);
 
                 setAboutUser(true);
                 setOffset(offset + 1);
@@ -78,17 +103,22 @@ function HomeScreen({ navigation }: HomeProps) {
 
     return (
         <View style={styles.scroll}>
-            <Text style={styles.text}>Bem vindo ao HUBusca</Text>
+            <Logo>HUBusca</Logo>
 
-            <TextInput
-                onChangeText={setText}
-                placeholder={"Buscar usuário"}
-                value={text} />
+            <SearchWrap>
+                <SearchBar
+                    onChangeText={setText}
+                    placeholder={"Buscar usuário"}
+                    value={text}
+                    returnKeyType='search'
+                    onSubmitEditing={() => loadUser()}
+                >
+                </SearchBar>
 
-
-            <Button title="Buscas recentes" onPress={() => { navigation.navigate(recentUsers) }} />
-            <Button title="Buscar user" onPress={() => { loadUser() }} />
-
+                <RecentUsersButton onPress={() => { navigation.navigate(recentUsers) }}>
+                    <RecentUsersText>Buscas recentes</RecentUsersText>
+                </RecentUsersButton>
+            </SearchWrap>
 
 
 
@@ -116,7 +146,6 @@ function HomeScreen({ navigation }: HomeProps) {
             )}
 
 
-
             {aboutUser && (
                 <View style={styles.scroll}>
                     <View>
@@ -141,9 +170,9 @@ function HomeScreen({ navigation }: HomeProps) {
                                 </View>
                             )
                         }}
-                        renderItem={({ item, index }) =>
+                        renderItem={({ item }) =>
                             <TouchableOpacity
-                                onPress={() => { WebBrowser.openBrowserAsync(`https://github.com/${user.login}/${item.name}`)}}>
+                                onPress={() => { WebBrowser.openBrowserAsync(`https://github.com/${user.login}/${item.name}`) }}>
 
                                 <Repository
                                     name={item.name}
@@ -176,6 +205,7 @@ const styles = StyleSheet.create({
     },
     scroll: {
         flex: 1,
+        backgroundColor: 'white',
         // flexGrow:1,
         // paddingBottom: 100,
     },

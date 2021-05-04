@@ -11,7 +11,7 @@ const MainNavigator: FC = () => {
 
     return (
         <NavigationContainer>
-            <Navigator initialRouteName="Home">
+            <Navigator initialRouteName="Home" screenOptions={{headerShown:false}}>
                 <Screen name="HomeScreen" component={HomeScreen} />
                 <Screen name="RecentUsersScreen" component={RecentUsersScreen} />
             </Navigator>
