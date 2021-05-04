@@ -1,16 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Image, Text, View, StyleSheet, TouchableOpacity, ScrollView, FlatList, ActivityIndicator } from 'react-native';
-import { TextInput } from 'react-native-gesture-handler';
+import React, { useState } from 'react';
+import { Image, View, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
 import { HomeProps } from '../commom/types';
 import { Repositories, User } from '../commom/interfaces';
 import githubAPI from '../commom/axios'
 import Repository from '../components/Repository';
-import UserComponent from '../components/UserComponent';
 import * as WebBrowser from 'expo-web-browser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { EvilIcons } from '@expo/vector-icons';
 
-import { Header, Logo, RepositoryWrap, SearchBar, SearchBarButton, SearchBarText, SearchWrap, TextCenter, UserImageButton } from './index';
+import { Header, Logo, SearchBar, SearchBarButton, SearchBarText, SearchWrap, TextCenter, UserImageButton } from './index';
 
 
 function HomeScreen({ navigation }: HomeProps) {
@@ -29,29 +27,29 @@ function HomeScreen({ navigation }: HomeProps) {
     const perPage: number = 10;
 
 
-    const setSearches = async (users: User[]) => {
-        try {
-            const jsonValue = JSON.stringify(users)
-            await AsyncStorage.setItem('@users', jsonValue)
-        } catch (e) {
-            // save error
-        }
-        console.log('Done.')
-    }
+    // const setSearches = async (users: User[]) => {
+    //     try {
+    //         const jsonValue = JSON.stringify(users)
+    //         await AsyncStorage.setItem('@users', jsonValue)
+    //     } catch (e) {
+    //         // save error
+    //     }
+    //     console.log('Done.')
+    // }
 
-    const getSearches = async () => {
-        try {
-            const jsonValue = await AsyncStorage.getItem('@users')
-            if (jsonValue !== null) {
-                console.log(JSON.parse(jsonValue));
-            }
+    // const getSearches = async () => {
+    //     try {
+    //         const jsonValue = await AsyncStorage.getItem('@users')
+    //         if (jsonValue !== null) {
+    //             console.log(JSON.parse(jsonValue));
+    //         }
 
-        } catch (e) {
-            // read error
-        }
+    //     } catch (e) {
+    //         // read error
+    //     }
 
-        console.log('Done.')
-    }
+    //     console.log('Done.')
+    // }
 
     const loadUser = () => {
 
@@ -64,7 +62,7 @@ function HomeScreen({ navigation }: HomeProps) {
                 setOffset(1);
                 setUser(response.data);
                 setUsers([...users, ...response.data]);
-                setSearches(users);
+                // setSearches(users);
                 // getSearches();
             })
             .catch(error => {
@@ -72,7 +70,7 @@ function HomeScreen({ navigation }: HomeProps) {
             });
 
 
-        getSearches();
+        // getSearches();
     }
 
     const loadUserRepositoriesData = () => {
